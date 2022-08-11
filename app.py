@@ -76,7 +76,7 @@ if os.environ.get('ENV', PROD) == PROD:
         app,
         f'{target_environment}{logical_id_prefix}EtlPipeline',
         target_environment=PROD,
-        target_branch='production',
+        target_branch='prod',
         target_aws_env=prod_aws_env,
         env=deployment_aws_env,
     )

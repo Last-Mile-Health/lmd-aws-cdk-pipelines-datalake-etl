@@ -267,8 +267,9 @@ class GlueStack(cdk.Stack):
             f'{target_environment}{logical_id_prefix}RawGlueRole',
             role_name=f'{target_environment.lower()}-{resource_name_prefix}-raw-glue-role',
             assumed_by=iam.ServicePrincipal('glue.amazonaws.com'),
-            inline_policies=[
-                iam.PolicyDocument(statements=[
+            inline_policies={
+            'AllowS3GetActions': iam.PolicyDocument(
+                statements=[
                     iam.PolicyStatement(
                         effect=iam.Effect.ALLOW,
                         actions=[
@@ -282,7 +283,8 @@ class GlueStack(cdk.Stack):
                         ]
                     )
                 ]),
-                iam.PolicyDocument(statements=[
+            'AllowS3PutActions': iam.PolicyDocument(
+                statements=[
                     iam.PolicyStatement(
                         effect=iam.Effect.ALLOW,
                         actions=[
@@ -296,7 +298,8 @@ class GlueStack(cdk.Stack):
                         ]
                     )
                 ]),
-                iam.PolicyDocument(statements=[
+            'AllowS3ListAllActions': iam.PolicyDocument(
+                statements=[
                     iam.PolicyStatement(
                         effect=iam.Effect.ALLOW,
                         actions=[
@@ -307,8 +310,8 @@ class GlueStack(cdk.Stack):
                         ]
                     )
                 ]),
-                # NOTE: This is required due to bucket level encryption on S3 Buckets
-                iam.PolicyDocument(statements=[
+            'AllowKMSActions': iam.PolicyDocument(
+                statements=[
                     iam.PolicyStatement(
                         effect=iam.Effect.ALLOW,
                         actions=[
@@ -319,7 +322,7 @@ class GlueStack(cdk.Stack):
                         ]
                     )
                 ]),
-            ],
+        },
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSGlueServiceRole'),
             ]
