@@ -15,9 +15,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     author="Zahid Muhammad Ali <zhidli@amazon.com>, Isaiah Grant <igrant@2ndwatch.com>, Ravi Itha <itharav@amazon.com>",
     packages=setuptools.find_packages(),
-    install_requires=[
-        "aws-cdk.core~=1.110.0",
-    ],
     python_requires=">=3.7",
     classifiers=[
         "Development Status :: 4 - Beta",
