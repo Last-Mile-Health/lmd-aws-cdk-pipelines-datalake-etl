@@ -26,7 +26,7 @@ class DynamoDbStack(cdk.Stack):
         resource_name_prefix = get_resource_name_prefix().replace('-', '_')
 
         self.removal_policy = cdk.RemovalPolicy.DESTROY
-        if (target_environment == PROD or target_environment == TEST):
+        if (target_environment == PROD):
             self.removal_policy = cdk.RemovalPolicy.RETAIN
 
         self.job_audit_table = dynamodb.Table(
