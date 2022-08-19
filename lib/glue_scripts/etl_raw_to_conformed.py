@@ -184,7 +184,7 @@ def main():
         .option('mode', 'DROPMALFORMED') \
         .load(source_path)
 
-    target_s3_location = 's3://' + args['target_bucketname'] + '/lmd_datalake/'
+    target_s3_location = 's3://' + args['target_bucketname'] + '/datalake/'
     storage_location = target_s3_location + args['table_name']
     upsert_catalog_table(df, args['target_databasename'], args['table_name'], 'PARQUET', storage_location)
 

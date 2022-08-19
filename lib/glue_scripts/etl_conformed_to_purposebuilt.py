@@ -198,7 +198,7 @@ def main():
 
     df = spark.sql(response['Body'].read().decode('utf-8'))
 
-    target_s3_location = "s3://" + args['target_bucketname'] + "/lmd_datalake/"
+    target_s3_location = "s3://" + args['target_bucketname'] + "/datalake/"
     storage_location = target_s3_location + args['table_name']
     upsert_catalog_table(df, args['target_database_name'], args['table_name'], 'PARQUET', storage_location)
 
