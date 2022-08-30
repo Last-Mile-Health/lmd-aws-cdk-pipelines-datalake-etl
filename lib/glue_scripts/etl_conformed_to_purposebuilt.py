@@ -196,7 +196,7 @@ def main():
         print('[ERROR] Glue job function call failed:{}'.format(e))
         raise e
 
-    df = spark.sql(response['Body'].read().decode('utf-8'))
+    df = spark.sql(response['Body'].read().decode('UTF-8'))
 
     target_s3_location = "s3://" + args['target_bucketname'] + "/datalake/"
     storage_location = target_s3_location + args['table_name']
