@@ -120,13 +120,13 @@ class GlueStack(cdk.Stack):
             ),
             default_arguments={
                 '--enable-glue-datacatalog': '""',
-                '--target_database_name': 'datablog_arg',
+                '--target_database_name': 'lmd_datalake_arg',
                 '--target_bucket': conformed_bucket.bucket_name,
-                '--target_table_name': 'datablog_nyc_raw',
+                '--target_table_name': 'lmd_datalake_raw',
                 '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/raw-to-conformed',
             },
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=1,
+                max_concurrent_runs=5,
             ),
             glue_version='2.0',
             max_retries=0,
@@ -149,15 +149,15 @@ class GlueStack(cdk.Stack):
             ),
             default_arguments={
                 '--enable-glue-datacatalog': '""',
-                '--target_database_name': 'datablog_conformed_arg',
+                '--target_database_name': 'lmd_datalake_conformed_arg',
                 '--target_bucketname': purposebuilt_bucket.bucket_name,
-                '--target_table_name': 'datablog_nyc_purposebuilt',
+                '--target_table_name': 'lmd_datalake_conformed',
                 '--txn_bucket_name': glue_scripts_bucket.bucket_name,
                 '--txn_sql_prefix_path': '/etl/transformation-sql/',
                 '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/conformed-to-purpose-built'
             },
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=1,
+                max_concurrent_runs=5,
             ),
             glue_version='2.0',
             max_retries=0,
