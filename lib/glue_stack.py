@@ -128,7 +128,7 @@ class GlueStack(cdk.Stack):
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=5,
             ),
-            glue_version='2.0',
+            glue_version='3.0',
             max_retries=0,
             number_of_workers=5,
             role=glue_role.role_arn,
@@ -159,7 +159,7 @@ class GlueStack(cdk.Stack):
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=5,
             ),
-            glue_version='2.0',
+            glue_version='3.0',
             max_retries=0,
             number_of_workers=5,
             role=glue_role.role_arn,
@@ -173,7 +173,7 @@ class GlueStack(cdk.Stack):
             description="Glue Job to ingest PARQUET file data from S3 to RedshiftServerless tables",
             # FIXME: The role should have permissions to connect to Redshift
             role=glue_role.role_arn,
-            glue_version="2.0",
+            glue_version="3.0",
             command=glue.CfnJob.JobCommandProperty(
                 name="glueetl",
                 script_location=f"s3://{glue_scripts_bucket.bucket_name}/etl/etl_conformed_to_redshift.py",
