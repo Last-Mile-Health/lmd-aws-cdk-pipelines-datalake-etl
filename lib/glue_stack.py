@@ -130,7 +130,7 @@ class GlueStack(cdk.Stack):
             ),
             glue_version='2.0',
             max_retries=0,
-            number_of_workers=5,
+            number_of_workers=10,
             role=glue_role.role_arn,
             worker_type='G.1X',
         )
@@ -161,7 +161,7 @@ class GlueStack(cdk.Stack):
             ),
             glue_version='2.0',
             max_retries=0,
-            number_of_workers=5,
+            number_of_workers=10,
             role=glue_role.role_arn,
             worker_type='G.1X',
         )
