@@ -170,7 +170,7 @@ class GlueStack(cdk.Stack):
             self,
             f'{target_environment}{logical_id_prefix}ConformedToRedshiftJob',
             name=f'{target_environment.lower()}-{resource_name_prefix}-conformed-to-redshift-job',
-            description="Glue Job to ingest PARQUET file data from S3 to RedshiftServerless tables",
+            description="Glue Job to ingest PARQUET file data from S3 to RedshiftServerless",
             # FIXME: The role should have permissions to connect to Redshift
             role=glue_role.role_arn,
             glue_version="3.0",
@@ -358,5 +358,6 @@ class GlueStack(cdk.Stack):
             },
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSGlueServiceRole'),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRedshiftAllCommandsFullAccess")
             ]
         )
