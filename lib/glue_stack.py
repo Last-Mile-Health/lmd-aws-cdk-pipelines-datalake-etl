@@ -191,7 +191,6 @@ class GlueStack(cdk.Stack):
                 '--enable-glue-datacatalog': 'true',
                 '--job-language': 'python',
             },
-            allocated_capacity=1,
             max_retries=0,
             worker_type='G.1X',
             number_of_workers=5,
