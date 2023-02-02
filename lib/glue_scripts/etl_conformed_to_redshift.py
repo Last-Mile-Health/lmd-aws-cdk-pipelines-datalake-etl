@@ -47,9 +47,9 @@ def sick_child():
         transformation_ctx="RedshiftCluster_node3",
     )
 
-is_sick_child_job = False
+is_sick_child_job = True 
 
 if is_sick_child_job: 
     sick_child()
-    
+
 job.commit()
