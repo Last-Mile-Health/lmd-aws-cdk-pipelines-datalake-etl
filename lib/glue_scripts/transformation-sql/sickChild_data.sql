@@ -11,7 +11,7 @@ select day(meta_autoDate)     AS day,
        coalesce(treatDiarrhea, 0) AS diarrhea_cases_treated,
        coalesce(treatPneumonia, 0) AS ari_cases_treated,
        source
-from sickChild_data_repo.sickChild_data
+from liberia.sickChild_data
 where (year(meta_autoDate) >= '2015' and year(meta_autoDate) <= '2022')
 group by meta_autoDate, year(meta_autoDate), month(meta_autoDate), day(meta_autoDate), malaria_cases_treated, diarrhea_cases_treated, ari_cases_treated, visitType, gender, HHID, communityID, sickChildFormID, source
 order by meta_autoDate, year(meta_autoDate) desc, month(meta_autoDate), day(meta_autoDate), malaria_cases_treated, diarrhea_cases_treated, ari_cases_treated, visitType, gender, HHID, communityID, sickChildFormID, source
