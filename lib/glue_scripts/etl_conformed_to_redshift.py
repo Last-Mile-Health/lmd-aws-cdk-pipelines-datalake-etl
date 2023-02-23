@@ -22,7 +22,7 @@ def replace(s):
 
 
 database = args['target_databasename']
-table = str(args["table_name"]).lower()
+table = str(args["table_name"])
 
 
 def load_redshift(database, table):
@@ -34,7 +34,7 @@ def load_redshift(database, table):
 
     redshift_load_dyf = glueContext.write_dynamic_frame.from_jdbc_conf(
         frame=data_catalogue_frame,
-        catalog_connection="lmd-20",
+        catalog_connection="redshift-connection",
         connection_options={"dbtable": table, "database": database},
         redshift_tmp_dir=args["TempDir"],
         transformation_ctx="redshift_load_dyf"
