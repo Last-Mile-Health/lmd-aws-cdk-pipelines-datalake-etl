@@ -199,7 +199,6 @@ class StepFunctionsStack(cdk.Stack):
             f'{target_environment}{logical_id_prefix}GlueRedshiftJobTask',
             glue_job_name=conformed_to_redshift_job.name,
             arguments=stepfunctions.TaskInput.from_object({
-                # '--JOB_NAME.$': '$.JOB_NAME',
                 '--target_databasename.$': '$.target_databasename',
                 '--table_name.$': '$.table_name'
             }),
