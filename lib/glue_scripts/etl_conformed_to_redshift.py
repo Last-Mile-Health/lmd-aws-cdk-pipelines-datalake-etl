@@ -25,10 +25,10 @@ database = args['target_databasename']
 table = str(args["table_name"])
 
 
-def load_redshift(database, table):
+def load_redshift(catalogue_database, catalogue_table, database, table):
     data_catalogue_frame = glueContext.create_dynamic_frame.from_catalog(
-        database=database,
-        table_name=table,
+        database=catalogue_database,
+        table_name=catalogue_table,
         transformation_ctx="S3bucket_node1",
     )
 
@@ -39,5 +39,12 @@ def load_redshift(database, table):
         redshift_tmp_dir=args["TempDir"],
         transformation_ctx="redshift_load_dyf"
     )
+
+if replace(table).find('sickchild') != -1:
+    load_redshift("lmd_datalake_conformed_arg", "sickchild_data", "liberia", "sickchild_data")
+if replace(table).find('routinevisit') != -1:
+    load_redshift("lmd_datalake_conformed_arg", "routinevisit", "liberia", "routinevisit")
+if replace(table).find('ichisexpansion') != -1:
+    load_redshift("lmd_datalake_conformed_arg", "mlw_ichis_expansion", "malawi", "mlw_ichis_expansion")
 
 job.commit()
