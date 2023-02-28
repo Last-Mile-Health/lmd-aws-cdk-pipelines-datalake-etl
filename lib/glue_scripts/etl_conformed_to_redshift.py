@@ -41,7 +41,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     )
 
 if replace(table).find('sickchild') != -1:
-    load_redshift("lmd_datalake_conformed_arg", "sickchild_data", "liberia", "sickchild_data")
+    load_redshift("lmd_datalake_conformed_arg", "sickchild_data", "liberia", "sickchild_data")    
 if replace(table).find('routinevisit') != -1:
     load_redshift("lmd_datalake_conformed_arg", "routinevisit", "liberia", "routinevisit")
 if replace(table).find('ichisexpansion') != -1:
