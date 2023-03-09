@@ -30,6 +30,7 @@ database = args['target_databasename']
 table = str(args["table_name"])
 
 curated_db_catalog = "lmd_datalake_conformed_arg"
+current_date = datetime.datetime.now()
 
 def load_redshift(catalogue_database, catalogue_table, database, table):
     
@@ -39,7 +40,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         transformation_ctx="S3bucket_node1",
     )
     
-    df = data_catalogue_frame.toDF().withColumn("date_inserted", lit(datetime.datetime.now())).withColumn("last_update_date", lit(datetime.datetime.now()))
+    df = data_catalogue_frame.toDF().withColumn("date_inserted", lit(current_date)).withColumn("last_update_date", lit(current_date))
     
     data_catalogue_frame = DynamicFrame.fromDF(df, glueContext, "dataframecontext")
     
