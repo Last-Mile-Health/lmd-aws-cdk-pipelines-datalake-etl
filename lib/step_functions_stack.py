@@ -16,10 +16,10 @@ import aws_cdk.aws_stepfunctions_tasks as stepfunctions_tasks
 
 
 from .configuration import (
-    AVAILABILITY_ZONE_1, AVAILABILITY_ZONE_2, AVAILABILITY_ZONE_3, 
+    AVAILABILITY_ZONE_1, AVAILABILITY_ZONE_2, AVAILABILITY_ZONE_3,
     ROUTE_TABLE_1, ROUTE_TABLE_2, ROUTE_TABLE_3,
     S3_RAW_BUCKET, SUBNET_ID_1, SUBNET_ID_2, SUBNET_ID_3, SHARED_SECURITY_GROUP_ID, VPC_ID,
-    get_environment_configuration, get_logical_id_prefix, get_resource_name_prefix, 
+    get_environment_configuration, get_logical_id_prefix, get_resource_name_prefix,
     S3_CONFORMED_BUCKET
 )
 
@@ -28,6 +28,7 @@ class StepFunctionsStack(cdk.Stack):
     def __init__(
         self, scope: cdk.Construct, construct_id: str, target_environment: str,
         raw_to_conformed_job: glue.CfnJob, conformed_to_purpose_built_job: glue.CfnJob,
+        conformed_to_redshift_job: glue.CfnJob,
         job_audit_table: dynamodb.Table,
         **kwargs
     ) -> None:
@@ -193,8 +194,23 @@ class StepFunctionsStack(cdk.Stack):
         )
         glue_conformed_task.add_catch(failure_function_task, result_path='$.taskresult',)
 
+        glue_redshift_task = stepfunctions_tasks.GlueStartJobRun(
+            self,
+            f'{target_environment}{logical_id_prefix}GlueRedshiftJobTask',
+            glue_job_name=conformed_to_redshift_job.name,
+            arguments=stepfunctions.TaskInput.from_object({
+                '--target_databasename.$': '$.target_databasename',
+                '--table_name.$': '$.table_name'
+            }),
+            output_path='$',
+            result_path='$.taskresult',
+            integration_pattern=stepfunctions.IntegrationPattern.RUN_JOB,
+            comment='Conformed to Redshift Job',
+        )
+        glue_redshift_task.add_catch(failure_function_task, result_path='$.taskresult',)
+
         machine_definition = glue_raw_task.next(
-            glue_conformed_task.next(success_function_task)
+            glue_conformed_task.next(glue_redshift_task.next(success_function_task))
         )
 
         machine = stepfunctions.StateMachine(
