@@ -15,3 +15,10 @@ __pycache__
 cdk.out
 .idea/
 cdk.context.json
+
+
+# venv
+
+bin/
+lib/python3.11/
+pyvenv.cfg
