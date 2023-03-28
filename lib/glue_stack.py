@@ -132,7 +132,7 @@ class GlueStack(cdk.Stack):
             max_retries=0,
             number_of_workers=10,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type='Standard',
         )
 
         self.conformed_to_purpose_built_job = glue.CfnJob(
@@ -163,7 +163,7 @@ class GlueStack(cdk.Stack):
             max_retries=0,
             number_of_workers=10,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type='Standard',
         )
 
         self.conformed_to_redshift_job = glue.CfnJob(
@@ -192,7 +192,7 @@ class GlueStack(cdk.Stack):
                 '--job-language': 'python',
             },
             max_retries=0,
-            worker_type='G.1X',
+            worker_type='Standard',
             number_of_workers=5,
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=5)
