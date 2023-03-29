@@ -126,13 +126,13 @@ class GlueStack(cdk.Stack):
                 '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/raw-to-conformed',
             },
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=5,
+                max_concurrent_runs=10,
             ),
             glue_version='3.0',
             max_retries=0,
-            number_of_workers=10,
+            number_of_workers=15,
             role=glue_role.role_arn,
-            worker_type='Standard',
+            worker_type='G.2X',
         )
 
         self.conformed_to_purpose_built_job = glue.CfnJob(
@@ -157,13 +157,13 @@ class GlueStack(cdk.Stack):
                 '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/conformed-to-purpose-built'
             },
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=5,
+                max_concurrent_runs=10,
             ),
             glue_version='3.0',
             max_retries=0,
-            number_of_workers=10,
+            number_of_workers=15,
             role=glue_role.role_arn,
-            worker_type='Standard',
+            worker_type='G.2X',
         )
 
         self.conformed_to_redshift_job = glue.CfnJob(
@@ -192,10 +192,10 @@ class GlueStack(cdk.Stack):
                 '--job-language': 'python',
             },
             max_retries=0,
-            worker_type='Standard',
-            number_of_workers=5,
+            worker_type='G.2X',
+            number_of_workers=15,
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=5)
+                max_concurrent_runs=10)
         )
 
     def glue_scripts_bucket(
