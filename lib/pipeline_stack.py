@@ -67,7 +67,6 @@ class PipelineStack(cdk.Stack):
                 action_name='GitHub',
                 branch=target_branch,
                 output=source_artifact,
-                publish_assets_in_parallel=False,
                 oauth_token=cdk.SecretValue.secrets_manager(mappings[DEPLOYMENT][GITHUB_TOKEN]),
                 trigger=codepipeline_actions.GitHubTrigger.POLL,
                 owner=mappings[DEPLOYMENT][GITHUB_REPOSITORY_OWNER_NAME],
@@ -124,6 +123,7 @@ class PipelineStack(cdk.Stack):
                 synth_command=f'export ENV={target_environment} && cdk synth --verbose',
             ),
             cross_account_keys=True,
+            publish_assets_in_parallel=False,
         )
 
         deploy_stage = PipelineDeployStage(
