@@ -123,7 +123,7 @@ class PipelineStack(cdk.Stack):
                 synth_command=f'export ENV={target_environment} && cdk synth --verbose',
             ),
             cross_account_keys=True,
-            publish_assets_in_parallel=False,
+            single_publisher_per_type=True,
         )
 
         deploy_stage = PipelineDeployStage(
