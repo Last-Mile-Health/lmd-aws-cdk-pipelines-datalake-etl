@@ -43,7 +43,8 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     df = data_catalogue_frame.toDF().withColumn("date_inserted", lit(
         current_date)).withColumn("last_update_date", lit(current_date))
 
-    data_catalogue_frame = DynamicFrame.fromDF(df, glueContext, "dataframecontext")
+    data_catalogue_frame = DynamicFrame.fromDF(
+        df, glueContext, "dataframecontext")
 
     redshift_load_dyf = glueContext.write_dynamic_frame.from_jdbc_conf(
         frame=data_catalogue_frame,
@@ -54,11 +55,11 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     )
 
 
-if replace(table).find('sickchild') != -1:
-    load_redshift(curated_db_catalog, "sickchild_data", "liberia", "sickchild_data")
-if replace(table).find('routinevisit') != -1:
-    load_redshift(curated_db_catalog, "routinevisit", "liberia", "routinevisit")
-if replace(table).find('ichisexpansion') != -1:
-    load_redshift(curated_db_catalog, "mlw_ichis_expansion", "malawi", "mlw_ichis_expansion")
+try:
+    load_redshift(curated_db_catalog, table,
+                  database, table)
+except Exception as e:
+    print(e)
+    print("Error occured while loading data")
 
 job.commit()
