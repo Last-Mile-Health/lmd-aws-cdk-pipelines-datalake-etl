@@ -126,13 +126,13 @@ class GlueStack(cdk.Stack):
                 '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/raw-to-conformed',
             },
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=5,
+                max_concurrent_runs=10,
             ),
-            glue_version='2.0',
-            max_retries=0,
-            number_of_workers=5,
+            glue_version='3.0',
+            max_retries=2,
+            number_of_workers=20,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type='Standard',
         )
 
         self.conformed_to_purpose_built_job = glue.CfnJob(
@@ -157,13 +157,45 @@ class GlueStack(cdk.Stack):
                 '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/conformed-to-purpose-built'
             },
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=5,
+                max_concurrent_runs=10,
             ),
-            glue_version='2.0',
-            max_retries=0,
-            number_of_workers=5,
+            glue_version='3.0',
+            max_retries=2,
+            number_of_workers=20,
             role=glue_role.role_arn,
-            worker_type='G.1X',
+            worker_type='Standard',
+        )
+
+        self.conformed_to_redshift_job = glue.CfnJob(
+            self,
+            f'{target_environment}{logical_id_prefix}ConformedToRedshiftJob',
+            name=f'{target_environment.lower()}-{resource_name_prefix}-conformed-to-redshift-job',
+            description="Glue Job to ingest PARQUET file data from S3 to RedshiftServerless",
+            # FIXME: The role should have permissions to connect to Redshift
+            role=glue_role.role_arn,
+            glue_version="3.0",
+            command=glue.CfnJob.JobCommandProperty(
+                name="glueetl",
+                script_location=f"s3://{glue_scripts_bucket.bucket_name}/etl/etl_conformed_to_redshift.py",
+                python_version="3"
+            ),
+            # FIXME: Redshift serverless connection
+            connections={"connections": ["redshift-connection"]},
+            default_arguments={
+                "--enable-metrics": True,
+                "--enable-continuous-cloudwatch-log": True,
+                "--job-bookmark-option": "job-bookmark-enable",
+                '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/conformed-to-redshift',
+                '--enable-spark-ui': True,
+                '--enable-job-insights': True,
+                '--enable-glue-datacatalog': True,
+                '--job-language': 'python',
+            },
+            max_retries=2,
+            worker_type='Standard',
+            number_of_workers=20,
+            execution_property=glue.CfnJob.ExecutionPropertyProperty(
+                max_concurrent_runs=10)
         )
 
     def glue_scripts_bucket(
@@ -268,62 +300,63 @@ class GlueStack(cdk.Stack):
             role_name=f'{target_environment.lower()}-{resource_name_prefix}-raw-glue-role',
             assumed_by=iam.ServicePrincipal('glue.amazonaws.com'),
             inline_policies={
-            'AllowS3GetActions': iam.PolicyDocument(
-                statements=[
-                    iam.PolicyStatement(
-                        effect=iam.Effect.ALLOW,
-                        actions=[
-                            's3:ListBucketVersions',
-                            's3:ListBucket',
-                            's3:GetBucketNotification',
-                            's3:GetBucketLocation',
-                        ],
-                        resources=[
-                            'arn:aws:s3:::*'
-                        ]
-                    )
-                ]),
-            'AllowS3PutActions': iam.PolicyDocument(
-                statements=[
-                    iam.PolicyStatement(
-                        effect=iam.Effect.ALLOW,
-                        actions=[
-                            's3:ReplicationObject',
-                            's3:PutObject',
-                            's3:GetObject',
-                            's3:DeleteObject',
-                        ],
-                        resources=[
-                            'arn:aws:s3:::*/*'
-                        ]
-                    )
-                ]),
-            'AllowS3ListAllActions': iam.PolicyDocument(
-                statements=[
-                    iam.PolicyStatement(
-                        effect=iam.Effect.ALLOW,
-                        actions=[
-                            's3:ListAllMyBuckets',
-                        ],
-                        resources=[
-                            '*'
-                        ]
-                    )
-                ]),
-            'AllowKMSActions': iam.PolicyDocument(
-                statements=[
-                    iam.PolicyStatement(
-                        effect=iam.Effect.ALLOW,
-                        actions=[
-                            'kms:*',
-                        ],
-                        resources=[
-                            s3_kms_key.key_arn,
-                        ]
-                    )
-                ]),
-        },
+                'AllowS3GetActions': iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            effect=iam.Effect.ALLOW,
+                            actions=[
+                                's3:ListBucketVersions',
+                                's3:ListBucket',
+                                's3:GetBucketNotification',
+                                's3:GetBucketLocation',
+                            ],
+                            resources=[
+                                'arn:aws:s3:::*'
+                            ]
+                        )
+                    ]),
+                'AllowS3PutActions': iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            effect=iam.Effect.ALLOW,
+                            actions=[
+                                's3:ReplicationObject',
+                                's3:PutObject',
+                                's3:GetObject',
+                                's3:DeleteObject',
+                            ],
+                            resources=[
+                                'arn:aws:s3:::*/*'
+                            ]
+                        )
+                    ]),
+                'AllowS3ListAllActions': iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            effect=iam.Effect.ALLOW,
+                            actions=[
+                                's3:ListAllMyBuckets',
+                            ],
+                            resources=[
+                                '*'
+                            ]
+                        )
+                    ]),
+                'AllowKMSActions': iam.PolicyDocument(
+                    statements=[
+                        iam.PolicyStatement(
+                            effect=iam.Effect.ALLOW,
+                            actions=[
+                                'kms:*',
+                            ],
+                            resources=[
+                                s3_kms_key.key_arn,
+                            ]
+                        )
+                    ]),
+            },
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSGlueServiceRole'),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRedshiftAllCommandsFullAccess")
             ]
         )
