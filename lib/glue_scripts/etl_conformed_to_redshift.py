@@ -10,10 +10,9 @@ from pyspark.sql.functions import lit
 from awsglue.dynamicframe import DynamicFrame
 
 
-
 args = getResolvedOptions(
     sys.argv, ["JOB_NAME", "table_name", "target_databasename"])
-    
+
 sc = SparkContext()
 glueContext = GlueContext(sc)
 spark = glueContext.spark_session
@@ -32,18 +31,21 @@ table = str(args["table_name"])
 curated_db_catalog = "lmd_datalake_conformed_arg"
 current_date = datetime.datetime.now()
 
+
 def load_redshift(catalogue_database, catalogue_table, database, table):
-    
+
     data_catalogue_frame = glueContext.create_dynamic_frame.from_catalog(
         database=catalogue_database,
         table_name=catalogue_table,
         transformation_ctx="S3bucket_node1",
     )
-    
-    df = data_catalogue_frame.toDF().withColumn("date_inserted", lit(current_date)).withColumn("last_update_date", lit(current_date))
-    
-    data_catalogue_frame = DynamicFrame.fromDF(df, glueContext, "dataframecontext")
-    
+
+    df = data_catalogue_frame.toDF().withColumn("date_inserted", lit(
+        current_date)).withColumn("last_update_date", lit(current_date))
+
+    data_catalogue_frame = DynamicFrame.fromDF(
+        df, glueContext, "dataframecontext")
+
     redshift_load_dyf = glueContext.write_dynamic_frame.from_jdbc_conf(
         frame=data_catalogue_frame,
         catalog_connection="redshift-connection",
@@ -52,11 +54,12 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         transformation_ctx="redshift_load_dyf"
     )
 
-if replace(table).find('sickchild') != -1:
-    load_redshift(curated_db_catalog, "sickchild_data", "liberia", "sickchild_data")    
-if replace(table).find('routinevisit') != -1:
-    load_redshift(curated_db_catalog, "routinevisit", "liberia", "routinevisit")
-if replace(table).find('ichisexpansion') != -1:
-    load_redshift(curated_db_catalog, "mlw_ichis_expansion", "malawi", "mlw_ichis_expansion")
+
+try:
+    load_redshift(curated_db_catalog, table,
+                  database, table)
+except Exception as e:
+    print(e)
+    print("Error occured while loading data")
 
 job.commit()
