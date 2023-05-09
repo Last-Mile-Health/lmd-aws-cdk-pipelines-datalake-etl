@@ -160,13 +160,8 @@ class GlueStack(cdk.Stack):
                 max_concurrent_runs=10,
             ),
             glue_version='3.0',
-            << << << < HEAD
-            max_retries=0,
-            number_of_workers=10,
-            == == == =
             max_retries=2,
             number_of_workers=20,
-            >>>>>> > main
             role=glue_role.role_arn,
             worker_type='Standard',
         )
@@ -201,38 +196,6 @@ class GlueStack(cdk.Stack):
             number_of_workers=20,
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=10)
-        )
-
-        self.conformed_to_redshift_job = glue.CfnJob(
-            self,
-            f'{target_environment}{logical_id_prefix}ConformedToRedshiftJob',
-            name=f'{target_environment.lower()}-{resource_name_prefix}-conformed-to-redshift-job',
-            description="Glue Job to ingest PARQUET file data from S3 to RedshiftServerless",
-            # FIXME: The role should have permissions to connect to Redshift
-            role=glue_role.role_arn,
-            glue_version="3.0",
-            command=glue.CfnJob.JobCommandProperty(
-                name="glueetl",
-                script_location=f"s3://{glue_scripts_bucket.bucket_name}/etl/etl_conformed_to_redshift.py",
-                python_version="3"
-            ),
-            # FIXME: Redshift serverless connection
-            connections={"connections": ["redshift-connection"]},
-            default_arguments={
-                "--enable-metrics": True,
-                "--enable-continuous-cloudwatch-log": True,
-                "--job-bookmark-option": "job-bookmark-enable",
-                '--TempDir': f's3://{glue_scripts_temp_bucket.bucket_name}/etl/conformed-to-redshift',
-                '--enable-spark-ui': True,
-                '--enable-job-insights': True,
-                '--enable-glue-datacatalog': True,
-                '--job-language': 'python',
-            },
-            max_retries=0,
-            worker_type='G.1X',
-            number_of_workers=5,
-            execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=5)
         )
 
     def glue_scripts_bucket(
