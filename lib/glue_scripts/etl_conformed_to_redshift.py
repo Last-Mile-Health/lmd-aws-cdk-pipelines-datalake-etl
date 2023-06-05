@@ -11,11 +11,8 @@ from pyspark.sql.functions import lit, col
 from awsglue.dynamicframe import DynamicFrame
 import boto3
 
-
-# args = getResolvedOptions(
-#     sys.argv, ["JOB_NAME", "table_name", "target_databasename", "target_environment"])
 args = getResolvedOptions(
-    sys.argv, ["JOB_NAME"])
+    sys.argv, ["JOB_NAME", "region", "workgroup_name", "account_id", "table_name", "target_databasename",])
 
 
 sc = SparkContext()
@@ -25,9 +22,11 @@ job = Job(glueContext)
 job.init(args["JOB_NAME"], args)
 
 
-# database = args['target_databasename']
-# table = str(args["table_name"])
-
+database = args['target_databasename']
+table = str(args["table_name"])
+region = args["region"]
+workgroup_name = args["workgroup_name"]
+account_id = args["account_id"]
 
 curated_db_catalog = "lmd_datalake_conformed_arg"
 current_date = datetime.datetime.now()
@@ -71,7 +70,22 @@ def get_password():
         response = client.list_secrets(NextToken=response['NextToken'])
         secrets.extend(response['SecretList'])
     redshift_password = next(secret for secret in secrets if 'lmdredshiftpassword' in secret['Name'].strip().lower())
-    return redshift_password['SecretString']
+    get_secret_value_response = client.get_secret_value(
+        SecretId=redshift_password['Name']
+    )
+    return get_secret_value_response['SecretString']
+
+
+def get_namespace_info():
+    client = boto3.client('redshift-serverless')
+    namespaces = []
+    response = client.list_namespaces()
+    namespaces.extend(response['namespaces'])
+    while 'NextToken' in response:
+        response = client.list_secrets(NextToken=response['NextToken'])
+        namespaces.extend(response['namespaces'])
+    namespace = next(namespace for namespace in namespaces if 'lmd-v2' in namespace['namespaceName'].lower())
+    return (namespace['adminUsername'], namespace['defaultIamRoleArn'])
 
 
 def load_redshift(catalogue_database, catalogue_table, database, table):
@@ -93,13 +107,17 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     for old_name, new_name in column_name_mapping.items():
         data_catalogue_df_renamed = data_catalogue_df_renamed.withColumnRenamed(old_name, new_name)
 
+    db_username, default_redshift_role_arn = get_namespace_info()
+    jdbc_connection = f"jdbc:redshift://{workgroup_name}.{account_id}.{region}.redshift-serverless.amazonaws.com:5439/{database}"
+    redshift_password = get_password()
+
     redshift_connection_options = {
-        "url": "jdbc:redshift://dev-lmd-v2.002190277880.us-east-1.redshift-serverless.amazonaws.com:5439/" + database,
+        "url": jdbc_connection,
         "dbtable": table,
-        "user": "master",
-        "password": get_password(),
+        "user": db_username,
+        "password": redshift_password,
         "redshiftTmpDir": args["TempDir"],
-        "aws_iam_role": "arn:aws:iam::002190277880:role/Dev-DevLMDCDKDataLakeInfr-DevLMDRedshiftServerless-1QWOKJZNUWE5W"
+        "aws_iam_role": default_redshift_role_arn
     }
 
     redshift_dynamicframe = glueContext.create_dynamic_frame_from_options(
@@ -150,10 +168,10 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         frame=data_catalogue_frame,
         connection_type="redshift",
         connection_options={
-            "url": "jdbc:redshift://dev-lmd-v2.002190277880.us-east-1.redshift-serverless.amazonaws.com:5439/" + database,
+            "url": jdbc_connection,
             "dbtable": table,
-            "user": "master",
-            "password": get_password(),
+            "user": db_username,
+            "password": redshift_password,
             "redshiftTmpDir": args["TempDir"]
         },
         transformation_ctx="redshift_load_dyf"
@@ -161,9 +179,8 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
 
 
 try:
-    # load_redshift(curated_db_catalog, table,
-    #               database, table)
-    get_password()
+    load_redshift(curated_db_catalog, table,
+                  database, table)
 except Exception as e:
     print(e)
     print("Error occured while loading data")
