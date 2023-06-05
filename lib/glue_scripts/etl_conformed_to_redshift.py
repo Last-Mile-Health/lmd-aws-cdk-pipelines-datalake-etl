@@ -1,5 +1,6 @@
 import sys
 import re
+import json
 from awsglue.transforms import *
 from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
@@ -11,10 +12,10 @@ from awsglue.dynamicframe import DynamicFrame
 import boto3
 
 
-args = getResolvedOptions(
-    sys.argv, ["JOB_NAME", "table_name", "target_databasename", "target_environment"])
 # args = getResolvedOptions(
-#     sys.argv, ["JOB_NAME"])
+#     sys.argv, ["JOB_NAME", "table_name", "target_databasename", "target_environment"])
+args = getResolvedOptions(
+    sys.argv, ["JOB_NAME"])
 
 
 sc = SparkContext()
@@ -24,11 +25,8 @@ job = Job(glueContext)
 job.init(args["JOB_NAME"], args)
 
 
-database = args['target_databasename']
-table = str(args["table_name"])
-
-# database = "malawi"
-# table = "mlw_ichis_training"
+# database = args['target_databasename']
+# table = str(args["table_name"])
 
 
 curated_db_catalog = "lmd_datalake_conformed_arg"
@@ -56,19 +54,24 @@ def filter_catalogue(kw, common_keys, haystack):
 
 
 def get_common_keys(table):
-    if table == 'mlw_ichis_training':
-        return ['district', 'first_name', 'surname', 'commonly_used_phone_no']
-    if table == 'sickchild':
-        return ['name']
+    # should a table be specific on fields
+    # to match against, use this function to return a list of such fields
+    # sample field selection for mlw_ichis_table
+    # if table == 'mlw_ichis_training':
+    #     return ['district', 'first_name', 'surname', 'commonly_used_phone_no']
     return None
 
 
-def secret():
+def get_password():
     client = boto3.client('secretsmanager')
-    get_secret_value_response = client.get_secret_value(
-        SecretId=""
-    )
-    print(get_secret_value_response)
+    secrets = []
+    response = client.list_secrets()
+    secrets.extend(response['SecretList'])
+    while 'NextToken' in response:
+        response = client.list_secrets(NextToken=response['NextToken'])
+        secrets.extend(response['SecretList'])
+    redshift_password = next(secret for secret in secrets if 'lmdredshiftpassword' in secret['Name'].strip().lower())
+    print(redshift_password)
 
 
 def load_redshift(catalogue_database, catalogue_table, database, table):
@@ -119,8 +122,6 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         print("defaulting to fuzzy match for " + table)
         common_keys = list(set(base_columns).intersection(set(redshift_df.columns)))
 
-    # print(id_list)
-
     for column in [column for column in redshift_df.columns if column not in data_catalogue_df_renamed.columns]:
         data_catalogue_df_renamed = data_catalogue_df_renamed.withColumn(column, lit(""))
 
@@ -145,19 +146,24 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     print("Redshift Entries " + str(redshift_dynamicframe.count()) + " Entries")
     print("Haystack " + str(len(haystack)) + " Entries")
 
-    redshift_load_dyf = glueContext.write_dynamic_frame.from_jdbc_conf(
+    redshift_load_dyf = glueContext.write_dynamic_frame.from_options(
         frame=data_catalogue_frame,
-        catalog_connection="redshift-connection",
-        connection_options={"dbtable": table, "database": database},
-        redshift_tmp_dir=args["TempDir"],
+        connection_type="redshift",
+        connection_options={
+            "url": "jdbc:redshift://dev-lmd-v2.002190277880.us-east-1.redshift-serverless.amazonaws.com:5439/" + database,
+            "dbtable": table,
+            "user": "master",
+            "password": "Hj3m6oLtCyBqT2f",
+            "redshiftTmpDir": args["TempDir"]
+        },
         transformation_ctx="redshift_load_dyf"
     )
 
 
 try:
-    load_redshift(curated_db_catalog, table,
-                  database, table)
-    # secret()
+    # load_redshift(curated_db_catalog, table,
+    #               database, table)
+    get_password()
 except Exception as e:
     print(e)
     print("Error occured while loading data")

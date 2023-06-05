@@ -180,7 +180,7 @@ class GlueStack(cdk.Stack):
                 python_version="3"
             ),
             # FIXME: Redshift serverless connection
-            connections={"connections": ["redshift-connection"]},
+            # connections={"connections": ["redshift-connection"]},
             default_arguments={
                 "--enable-metrics": True,
                 "--enable-continuous-cloudwatch-log": True,
