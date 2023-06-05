@@ -71,7 +71,7 @@ def get_password():
         response = client.list_secrets(NextToken=response['NextToken'])
         secrets.extend(response['SecretList'])
     redshift_password = next(secret for secret in secrets if 'lmdredshiftpassword' in secret['Name'].strip().lower())
-    print(redshift_password)
+    return redshift_password['SecretString']
 
 
 def load_redshift(catalogue_database, catalogue_table, database, table):
@@ -97,7 +97,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         "url": "jdbc:redshift://dev-lmd-v2.002190277880.us-east-1.redshift-serverless.amazonaws.com:5439/" + database,
         "dbtable": table,
         "user": "master",
-        "password": "Hj3m6oLtCyBqT2f",
+        "password": get_password(),
         "redshiftTmpDir": args["TempDir"],
         "aws_iam_role": "arn:aws:iam::002190277880:role/Dev-DevLMDCDKDataLakeInfr-DevLMDRedshiftServerless-1QWOKJZNUWE5W"
     }
@@ -153,7 +153,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
             "url": "jdbc:redshift://dev-lmd-v2.002190277880.us-east-1.redshift-serverless.amazonaws.com:5439/" + database,
             "dbtable": table,
             "user": "master",
-            "password": "Hj3m6oLtCyBqT2f",
+            "password": get_password(),
             "redshiftTmpDir": args["TempDir"]
         },
         transformation_ctx="redshift_load_dyf"
