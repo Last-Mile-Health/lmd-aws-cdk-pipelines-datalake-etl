@@ -91,12 +91,12 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         data_catalogue_df_renamed = data_catalogue_df_renamed.withColumnRenamed(old_name, new_name)
 
     redshift_connection_options = {
-        "url": "jdbc:redshift://dev-lmd-v2.002190277880.us-east-1.redshift-serverless.amazonaws.com:5439/" + database,
+        "url": "url/" + database,
         "dbtable": table,
-        "user": "master",
-        "password": "Hj3m6oLtCyBqT2f",
+        "user": "",
+        "password": "",
         "redshiftTmpDir": args["TempDir"],
-        "aws_iam_role": "arn:aws:iam::002190277880:role/Dev-DevLMDCDKDataLakeInfr-DevLMDRedshiftServerless-1QWOKJZNUWE5W"
+        "aws_iam_role": ""
     }
 
     redshift_dynamicframe = glueContext.create_dynamic_frame_from_options(
