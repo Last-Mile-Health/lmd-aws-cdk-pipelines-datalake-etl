@@ -190,6 +190,7 @@ class GlueStack(cdk.Stack):
                 '--enable-job-insights': True,
                 '--enable-glue-datacatalog': True,
                 '--job-language': 'python',
+                '--target-environment': target_environment
             },
             max_retries=2,
             worker_type='Standard',
