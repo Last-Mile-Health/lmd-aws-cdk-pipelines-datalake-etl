@@ -43,6 +43,7 @@ def get_key_value(obj, key):
     return obj[key]
 
 
+# match object again datawarehouse entries across dynamic keys
 def filter_catalogue(kw, common_keys, haystack):
     try:
         next(hay for hay in haystack
@@ -61,6 +62,7 @@ def get_common_keys(table):
     return None
 
 
+# Fetch passwod from secrets manager - lmdredshiftpassword match
 def get_password():
     client = boto3.client('secretsmanager')
     secrets = []
@@ -76,6 +78,7 @@ def get_password():
     return get_secret_value_response['SecretString']
 
 
+# Fetch namespace information (db user & role arn)
 def get_namespace_info():
     client = boto3.client('redshift-serverless')
     namespaces = []
@@ -100,6 +103,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     old_catalogue_columns = data_catalogue_df.columns
     new_catalogue_columns = [column.lower() for column in old_catalogue_columns]
 
+    # Rename columns to lower case underscore equivalent
     column_name_mapping = dict(zip(old_catalogue_columns, new_catalogue_columns))
 
     data_catalogue_df_renamed = data_catalogue_df
@@ -125,6 +129,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
 
     redshift_df = redshift_dynamicframe.toDF()
 
+    # Capture catalogue columns before updating redshift columns
     base_columns = data_catalogue_df_renamed.columns
 
     try:
@@ -140,11 +145,13 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
         print("defaulting to fuzzy match for " + table)
         common_keys = list(set(base_columns).intersection(set(redshift_df.columns)))
 
+    # Update catalogue dataframe with redshift columns (schema)
     for column in [column for column in redshift_df.columns if column not in data_catalogue_df_renamed.columns]:
         data_catalogue_df_renamed = data_catalogue_df_renamed.withColumn(column, lit(""))
 
     haystack = redshift_df.collect()
 
+    # Filter catalogue entries based on predicate
     load = data_catalogue_df_renamed.rdd.filter(lambda x: filter_catalogue(
         x, common_keys, haystack)).collect()
 
