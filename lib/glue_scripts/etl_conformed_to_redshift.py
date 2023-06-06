@@ -142,7 +142,7 @@ def load_redshift(catalogue_database, catalogue_table, database, table):
     common_keys = get_common_keys(table)
 
     if common_keys is None:
-        print("defaulting to fuzzy match for " + table)
+        print("defaulting to full match for " + table)
         common_keys = list(set(base_columns).intersection(set(redshift_df.columns)))
 
     # Update catalogue dataframe with redshift columns (schema)
