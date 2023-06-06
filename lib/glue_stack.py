@@ -171,7 +171,6 @@ class GlueStack(cdk.Stack):
             f'{target_environment}{logical_id_prefix}ConformedToRedshiftJob',
             name=f'{target_environment.lower()}-{resource_name_prefix}-conformed-to-redshift-job',
             description="Glue Job to ingest PARQUET file data from S3 to RedshiftServerless",
-            # FIXME: The role should have permissions to connect to Redshift
             role=glue_role.role_arn,
             glue_version="3.0",
             command=glue.CfnJob.JobCommandProperty(
@@ -190,8 +189,8 @@ class GlueStack(cdk.Stack):
                 '--job-language': 'python',
                 '--additional-python-modules': 'botocore>=1.29.147,boto3>=1.26.147',
                 '--workgroup_name': f"{target_environment}-lmd-v2".lower(),
-                '--region': str(REGION).lower(),
-                '--account_id': ACCOUNT_ID
+                '--region': self.mappings[REGION],
+                '--account_id': self.mappings[ACCOUNT_ID]
             },
             max_retries=2,
             worker_type='Standard',
