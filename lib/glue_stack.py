@@ -160,13 +160,8 @@ class GlueStack(cdk.Stack):
                 max_concurrent_runs=10,
             ),
             glue_version='3.0',
-            << << << < HEAD
-            max_retries=0,
-            number_of_workers=10,
-            == == == =
             max_retries=2,
             number_of_workers=20,
-            >>>>>> > main
             role=glue_role.role_arn,
             worker_type='Standard',
         )
