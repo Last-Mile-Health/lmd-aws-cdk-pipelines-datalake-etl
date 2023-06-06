@@ -12,7 +12,7 @@ import aws_cdk.aws_s3_deployment as s3_deployment
 from .configuration import (
     AVAILABILITY_ZONE_1, SUBNET_ID_1,
     S3_ACCESS_LOG_BUCKET, S3_KMS_KEY, S3_CONFORMED_BUCKET, S3_PURPOSE_BUILT_BUCKET, SHARED_SECURITY_GROUP_ID,
-    get_environment_configuration, get_logical_id_prefix, get_resource_name_prefix
+    ACCOUNT_ID, REGION, get_environment_configuration, get_logical_id_prefix, get_resource_name_prefix
 )
 
 
@@ -179,8 +179,6 @@ class GlueStack(cdk.Stack):
                 script_location=f"s3://{glue_scripts_bucket.bucket_name}/etl/etl_conformed_to_redshift.py",
                 python_version="3"
             ),
-            # FIXME: Redshift serverless connection
-            # connections={"connections": ["redshift-connection"]},
             default_arguments={
                 "--enable-metrics": True,
                 "--enable-continuous-cloudwatch-log": True,
@@ -190,7 +188,10 @@ class GlueStack(cdk.Stack):
                 '--enable-job-insights': True,
                 '--enable-glue-datacatalog': True,
                 '--job-language': 'python',
-                '--target-environment': target_environment
+                '--additional-python-modules': 'botocore>=1.29.147,boto3>=1.26.147',
+                '--workgroup_name': f"{target_environment}-lmd-v2".lower(),
+                '--region': str(REGION).lower(),
+                '--account_id': ACCOUNT_ID
             },
             max_retries=2,
             worker_type='Standard',
@@ -358,6 +359,8 @@ class GlueStack(cdk.Stack):
             },
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSGlueServiceRole'),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRedshiftAllCommandsFullAccess")
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRedshiftAllCommandsFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("SecretsManagerReadWrite"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonRedshiftFullAccess")
             ]
         )
