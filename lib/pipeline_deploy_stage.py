@@ -47,6 +47,7 @@ class PipelineDeployStage(core.Stage):
             target_environment=target_environment,
             raw_to_conformed_job=glue_stack.raw_to_conformed_job,
             conformed_to_purpose_built_job=glue_stack.conformed_to_purpose_built_job,
+            conformed_to_redshift_job=glue_stack.conformed_to_redshift_job,
             job_audit_table=dynamodb_stack.job_audit_table,
             **kwargs,
         )

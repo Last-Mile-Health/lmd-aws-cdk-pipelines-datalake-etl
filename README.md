@@ -261,7 +261,7 @@ Below lists steps are required before starting the job testing:
 1. To validate the data, please open Athena service and execute query. For testing purpose below mentioned query is being used 
 
    ```sql
-   SELECT * FROM "datablog_arg"."yellow_taxi_trip_record" limit 10;
+   SELECT * FROM "datablog_arg"."yellow_taxi_trip_record" limit 20;
    ```
 
 1. For testing of `second data source`, Download Green Taxi Trip Records for [August-2020](https://nyc-tlc.s3.amazonaws.com/trip+data/green_tripdata_2020-08.csv)
