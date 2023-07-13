@@ -67,20 +67,24 @@ To demonstrate the above benefits, we will use [NYC Taxi and Limousine Commissio
 
 Figure below represents the infrastructure resources we provision for Data Lake.
 
-1. A file server uploads files to S3 raw bucket of the data lake. Here file server is a data producer/source for the data lake. Assumption is the data will be pushed to the raw bucket
-1. Amazon S3 triggers an event notification to AWS Lambda Function
-1. AWS Lambda function inserts an item in DynamoDB table
+1. Data in json(via S3 put method), csv, etc. is uploaded to the raw S3 bucket from a data producer/source. The
+   data producer could be a file server, ETL processes integrating data from external sources, manual files uploads,
+   etc.
+1. S3 event-notification(via S3 put event) triggers a lambda function.
+1. The AWS Lambda function inserts an item in DynamoDB table.
 1. AWS Lambda function Starts an execution of AWS Step Functions State machine
-1. Runs a Glue Job – Initiate glue job in sync mode
-1. Glue job – Spark glue job will process the data from raw to conform. Source data is provided in csv format and will be converted to the parquet format
-1. After creating parquet data will update the Glue Data Catalog table
-1. Runs a Glue Job – initiates data processing from conform to purpose-built in sync mode
-1. Glue Job – conformed to purpose-built fetches data transformation rules from DynamoDB table 
-1. Stores the result in parquet format within purpose-built zone
-1. Glue job updates the Data Catalog table
-1. Updates DynamoDB table with job status
-1. Sends SNS notification
-1. Data engineers or analysts analyze data using Amazon Athena
+1. Step functions intiates the `raw_to_staging_job` which converts the uploaded data into parquet format – Initiate glue job in sync mode
+1. The `raw_to_staging_job` loads the formatted data into the respective S3 bucket.
+1. The `raw_to_staging_job` updates the data catalogue with the new data
+1. Step functions intiates the `staging_to_curated_job` which transforms the parquet data using the SQL scripts provided for that dataset
+1. The `staging_to_curated_job` writes to S3 with the tranformed data
+1. The `staging_to_curated_job` updates the catalogue with the details about the transformed data
+1. Step functions intiates the `curated_to_redshift_job` which is responsible for loading the curated data into AWS redshift 
+1. The `curated_to_redshift_job` reads the S3 bucket via the updated catalogue 
+1. The `curated_to_redshift_job` loads data into redshift after deduplicating it first 
+1. Dynamo DB is updated with the results of the step function run
+1. Quicksight can be connected directly to the warehouse and visualisations done.
+1. An SNS notification via email is sent to the data engineering team channel on the status of the data pipeline
 
 
 ![Data Lake Infrastructure Architecture](./resources/Aws-cdk-pipelines-blog-datalake-etl.png)
