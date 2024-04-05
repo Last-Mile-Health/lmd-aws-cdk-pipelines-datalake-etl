@@ -109,11 +109,11 @@ class GlueStack(cdk.Stack):
 
         job_connection = glue.CfnConnection(
             self,
-            f'{target_environment}{logical_id_prefix}RawToConformedWorkflowConnectionTwo',
+            f'{target_environment}{logical_id_prefix}RawToConformedWorkflowConnection',
             catalog_id=self.account,
             connection_input=glue.CfnConnection.ConnectionInputProperty(
                 connection_type="NETWORK",
-                name=f'{target_environment.lower()}-{resource_name_prefix}-raw-to-conformed-connection',
+                name=f'{target_environment.lower()}-{resource_name_prefix}-raw-to-conformed-connection-two',
                 physical_connection_requirements=glue.CfnConnection.PhysicalConnectionRequirementsProperty(
                     availability_zone=subnet.availability_zone,
                     security_group_id_list=[shared_security_group.security_group_id],
