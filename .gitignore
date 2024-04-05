@@ -22,3 +22,7 @@ cdk.context.json
 bin/
 lib/python3.11/
 pyvenv.cfg
+
+build/
+
+dist/
