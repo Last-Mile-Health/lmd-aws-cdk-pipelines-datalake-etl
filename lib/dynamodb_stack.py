@@ -1,7 +1,8 @@
 # Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-import aws_cdk.core as cdk
+import aws_cdk as cdk
+from constructs import Construct
 import aws_cdk.aws_dynamodb as dynamodb
 
 from .configuration import (
@@ -10,7 +11,7 @@ from .configuration import (
 
 
 class DynamoDbStack(cdk.Stack):
-    def __init__(self, scope: cdk.Construct, construct_id: str, target_environment: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, target_environment: str, **kwargs) -> None:
         """
         CloudFormation stack to create DynamoDB Tables.
 

@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: MIT-0
 
 import os
-import aws_cdk.core as cdk
+import aws_cdk as cdk
+from constructs import Construct
 import aws_cdk.aws_dynamodb as dynamodb
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_glue as glue
@@ -26,7 +27,7 @@ from .configuration import (
 
 class StepFunctionsStack(cdk.Stack):
     def __init__(
-        self, scope: cdk.Construct, construct_id: str, target_environment: str,
+        self, scope: Construct, construct_id: str, target_environment: str,
         raw_to_conformed_job: glue.CfnJob, conformed_to_purpose_built_job: glue.CfnJob,
         conformed_to_redshift_job: glue.CfnJob,
         job_audit_table: dynamodb.Table,
@@ -94,7 +95,7 @@ class StepFunctionsStack(cdk.Stack):
             },
             security_groups=[shared_security_group],
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
         )
         status_function.add_to_role_policy(
             iam.PolicyStatement(
@@ -128,7 +129,7 @@ class StepFunctionsStack(cdk.Stack):
             f'{target_environment}{logical_id_prefix}EtlFailurePublishTask',
             topic=notification_topic,
             subject='Job Completed',
-            message=stepfunctions.TaskInput.from_data_at('$')
+            message=stepfunctions.TaskInput.from_json_path_at('$')
         )
         failure_function_task.next(failure_notification_task)
         failure_notification_task.next(fail_state)
@@ -147,7 +148,7 @@ class StepFunctionsStack(cdk.Stack):
             f'{target_environment}{logical_id_prefix}EtlSuccessPublishTask',
             topic=notification_topic,
             subject='Job Failed',
-            message=stepfunctions.TaskInput.from_data_at('$')
+            message=stepfunctions.TaskInput.from_json_path_at('$')
         )
         success_function_task.next(success_task)
         success_task.next(success_state)
@@ -234,7 +235,7 @@ class StepFunctionsStack(cdk.Stack):
             },
             security_groups=[shared_security_group],
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
         )
         trigger_function.add_to_role_policy(
             iam.PolicyStatement(
