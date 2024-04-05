@@ -1,7 +1,8 @@
 # Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-import aws_cdk.core as cdk
+import aws_cdk as cdk
+from constructs import Construct
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_glue as glue
@@ -19,7 +20,7 @@ from .configuration import (
 class GlueStack(cdk.Stack):
     def __init__(
         self,
-        scope: cdk.Construct,
+        scope: Construct,
         construct_id: str,
         target_environment: str,
         **kwargs
@@ -97,13 +98,28 @@ class GlueStack(cdk.Stack):
             s3_kms_key,
         )
 
-        job_connection = glue.Connection(
+        # job_connection = glue.CfnConnection(
+        #     self,
+        #     f'{target_environment}{logical_id_prefix}RawToConformedWorkflowConnection',
+        #     type=glue.ConnectionType.NETWORK,
+        #     connection_name=f'{target_environment.lower()}-{resource_name_prefix}-raw-to-conformed-connection',
+        #     security_groups=[shared_security_group],
+        #     subnet=subnet
+        # )
+
+        job_connection = glue.CfnConnection(
             self,
             f'{target_environment}{logical_id_prefix}RawToConformedWorkflowConnection',
-            type=glue.ConnectionType.NETWORK,
-            connection_name=f'{target_environment.lower()}-{resource_name_prefix}-raw-to-conformed-connection',
-            security_groups=[shared_security_group],
-            subnet=subnet
+            catalog_id=self.account,
+            connection_input=glue.CfnConnection.ConnectionInputProperty(
+                connection_type="NETWORK",
+                name=f'{target_environment.lower()}-{resource_name_prefix}-raw-to-conformed-connection',
+                physical_connection_requirements=glue.CfnConnection.PhysicalConnectionRequirementsProperty(
+                    availability_zone=subnet.availability_zone,
+                    security_group_id_list=[shared_security_group.security_group_id],
+                    subnet_id=subnet.subnet_id
+                )
+            )
         )
 
         self.raw_to_conformed_job = glue.CfnJob(
@@ -116,7 +132,7 @@ class GlueStack(cdk.Stack):
                 script_location=f's3://{glue_scripts_bucket.bucket_name}/etl/etl_raw_to_conformed.py'
             ),
             connections=glue.CfnJob.ConnectionsListProperty(
-                connections=[job_connection.connection_name],
+                connections=[job_connection.connection_input.name],
             ),
             default_arguments={
                 '--enable-glue-datacatalog': '""',
@@ -145,7 +161,7 @@ class GlueStack(cdk.Stack):
                 script_location=f's3://{glue_scripts_bucket.bucket_name}/etl/etl_conformed_to_purposebuilt.py'
             ),
             connections=glue.CfnJob.ConnectionsListProperty(
-                connections=[job_connection.connection_name],
+                connections=[job_connection.connection_input.name],
             ),
             default_arguments={
                 '--enable-glue-datacatalog': '""',
