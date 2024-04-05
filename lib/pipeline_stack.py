@@ -116,6 +116,9 @@ class PipelineStack(cdk.Stack):
             ]
         )
 
+        repo_string = self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_OWNER_NAME] + \
+            '/' + {self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]}
+
         pipeline = Pipelines.CodePipeline(
             self,
             f'{target_environment}{logical_id_prefix}DatalakeEtlPipeline',
@@ -125,8 +128,7 @@ class PipelineStack(cdk.Stack):
             synth=Pipelines.ShellStep(
                 "Synth",
                 input=Pipelines.CodePipelineSource.git_hub(
-                    repo_string=f"{self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_OWNER_NAME]
-                                   }/{self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]}",
+                    repo_string=repo_string,
                     branch=target_branch,
                     authentication=cdk.SecretValue.secrets_manager(
                         self.mappings[DEPLOYMENT][GITHUB_TOKEN]
