@@ -117,7 +117,7 @@ class PipelineStack(cdk.Stack):
         )
 
         repo_string = self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_OWNER_NAME] + \
-            '/' + {self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]}
+            '/' + self.mappings[DEPLOYMENT][GITHUB_REPOSITORY_NAME]
 
         pipeline = Pipelines.CodePipeline(
             self,
