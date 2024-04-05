@@ -109,7 +109,7 @@ class GlueStack(cdk.Stack):
 
         job_connection = glue.CfnConnection(
             self,
-            f'{target_environment}{logical_id_prefix}RawToConformedWorkflowConnectionV2',
+            f'{target_environment}{logical_id_prefix}RawToConformedWorkflowConnectionTwo',
             catalog_id=self.account,
             connection_input=glue.CfnConnection.ConnectionInputProperty(
                 connection_type="NETWORK",
