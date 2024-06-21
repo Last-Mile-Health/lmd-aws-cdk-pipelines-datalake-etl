@@ -216,6 +216,7 @@ def main():
     df_final.write.partitionBy('year', 'month', 'day').format('parquet').save(storage_location, mode='overwrite')
 
     target_table_name = args['target_databasename'] + '.' + args['table_name']
+
     spark.sql(f'ALTER TABLE {target_table_name} RECOVER PARTITIONS')
 
     job.commit()
