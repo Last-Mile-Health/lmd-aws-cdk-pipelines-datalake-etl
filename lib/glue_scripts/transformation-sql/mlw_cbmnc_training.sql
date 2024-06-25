@@ -1,16 +1,16 @@
-SELECT	day,																				
+SeLecT	day,																				
 		month,																		
 		year,																																				
-		Participant Name,
-		Phonenumber,
-		Age,
-		Gender ,
-		Position,
-		Education,
-		District,
-		Health facility,
-		Catchmentarea
+		participant_name,
+		phonenumber,
+		age,
+		gender ,
+		position,
+		education,
+		district,
+		health facility,
+		catchmentarea
 																
 FROM malawi.mlw_cmbnc_training
-GROUP BY day, month, year, Participant Name, Phonenumber, Age, Gender , Position, Education, District, Health facility, Catchmentarea
-ORDER BY day, month, year, Participant Name, Phonenumber, Age, Gender , Position, Education, District, Health facility, Catchmentarea
+GROUp BY day, month, year, participant_name, phonenumber, age, gender , position, education, district, health_facility, catchmentarea
+ORdeR BY day, month, year, participant_name, phonenumber, age, gender , position, education, district, health_facility, catchmentarea
