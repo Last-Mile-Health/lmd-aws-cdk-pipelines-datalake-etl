@@ -8,7 +8,7 @@ SeLecT	day,
 		position,
 		education,
 		district,
-		health facility,
+		health_facility,
 		catchmentarea
 																
 FROM malawi.mlw_cmbnc_training
