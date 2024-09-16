@@ -137,8 +137,9 @@ class GlueStack(cdk.Stack):
             ),
             glue_version='3.0',
             max_retries=2,
-            number_of_workers=20,
+            number_of_workers=2,
             role=glue_role.role_arn,
+            job_run_queuing_enabled=True,
             worker_type='Standard',
         )
 
@@ -168,8 +169,9 @@ class GlueStack(cdk.Stack):
             ),
             glue_version='3.0',
             max_retries=2,
-            number_of_workers=20,
+            number_of_workers=2,
             role=glue_role.role_arn,
+            job_run_queuing_enabled=True,
             worker_type='Standard',
         )
 
@@ -201,7 +203,8 @@ class GlueStack(cdk.Stack):
             },
             max_retries=2,
             worker_type='Standard',
-            number_of_workers=20,
+            number_of_workers=2,
+            job_run_queuing_enabled=True,
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
                 max_concurrent_runs=10)
         )
