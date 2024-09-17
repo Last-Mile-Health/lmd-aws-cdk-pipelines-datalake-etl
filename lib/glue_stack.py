@@ -201,12 +201,12 @@ class GlueStack(cdk.Stack):
                 '--region': self.mappings[REGION],
                 '--account_id': self.mappings[ACCOUNT_ID]
             },
-            max_retries=2,
+            max_retries=0,
             worker_type='Standard',
-            number_of_workers=2,
+            number_of_workers=4,
             # job_run_queuing_enabled=True,
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=10)
+                max_concurrent_runs=1)
         )
 
     def glue_scripts_bucket(
