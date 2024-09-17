@@ -201,7 +201,7 @@ class GlueStack(cdk.Stack):
                 '--region': self.mappings[REGION],
                 '--account_id': self.mappings[ACCOUNT_ID]
             },
-            max_retries=2,
+            max_retries=0,
             worker_type='Standard',
             number_of_workers=4,
             # job_run_queuing_enabled=True,
