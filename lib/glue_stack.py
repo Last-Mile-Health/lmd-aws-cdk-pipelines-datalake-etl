@@ -126,7 +126,7 @@ class GlueStack(cdk.Stack):
                 connections=[job_connection.connection_input.name],
             ),
             default_arguments={
-                '--enable-glue-datacatalog': '""',
+                '--enable-glue-datacatalog': True,
                 '--target_database_name': 'lmd_datalake_arg',
                 '--target_bucket': conformed_bucket.bucket_name,
                 '--target_table_name': 'lmd_datalake_raw',
@@ -141,6 +141,7 @@ class GlueStack(cdk.Stack):
             role=glue_role.role_arn,
             # job_run_queuing_enabled=True,
             worker_type='Standard',
+            timeout=60
         )
 
         self.conformed_to_purpose_built_job = glue.CfnJob(
@@ -156,7 +157,7 @@ class GlueStack(cdk.Stack):
                 connections=[job_connection.connection_input.name],
             ),
             default_arguments={
-                '--enable-glue-datacatalog': '""',
+                '--enable-glue-datacatalog': True,
                 '--target_database_name': 'lmd_datalake_conformed_arg',
                 '--target_bucketname': purposebuilt_bucket.bucket_name,
                 '--target_table_name': 'lmd_datalake_conformed',
@@ -173,6 +174,7 @@ class GlueStack(cdk.Stack):
             role=glue_role.role_arn,
             # job_run_queuing_enabled=True,
             worker_type='Standard',
+            timeout=60
         )
 
         self.conformed_to_redshift_job = glue.CfnJob(
@@ -206,7 +208,8 @@ class GlueStack(cdk.Stack):
             number_of_workers=4,
             # job_run_queuing_enabled=True,
             execution_property=glue.CfnJob.ExecutionPropertyProperty(
-                max_concurrent_runs=1)
+                max_concurrent_runs=1),
+            timeout=60
         )
 
     def glue_scripts_bucket(
