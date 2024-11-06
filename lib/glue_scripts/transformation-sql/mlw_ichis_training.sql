@@ -1,7 +1,6 @@
 select day,
        month,
        year,
-	   number,
 	   district,
 	   reporting_health_facility_name,
 	   full_name_of_participant,
