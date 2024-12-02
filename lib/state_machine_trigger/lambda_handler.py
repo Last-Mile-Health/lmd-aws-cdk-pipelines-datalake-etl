@@ -90,6 +90,9 @@ def lambda_handler(event, context):
     logger.info('target bucket name: ' + target_bucket_name)
 
     if p_base_file_name != '':
+        if p_base_file_name.endswith('.gitkeep'):
+            return {'statusCode': 200,
+                    'body': json.dumps(f'File {p_base_file_name} received but will not be processed!')}
         # Capturing the current time in CST
         central = dateutil.tz.gettz('US/Central')
         now = datetime.now(tz=central)
@@ -115,7 +118,7 @@ def lambda_handler(event, context):
                 'target_databasename': p_source_system_name,
                 'target_bucketname': target_bucket_name,
                 'source_bucketname': source_bucket_name,
-                'source_key': p_file_dir_upd, 
+                'source_key': p_file_dir_upd,
                 'base_file_name': p_base_file_name,
                 'p_year': p_year,
                 'p_month': p_month,

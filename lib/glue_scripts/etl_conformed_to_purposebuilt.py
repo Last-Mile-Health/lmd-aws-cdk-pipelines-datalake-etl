@@ -12,6 +12,8 @@ from boto3.dynamodb.conditions import Key
 from pyspark.sql import HiveContext
 from awsglue.dynamicframe import DynamicFrame
 
+from pyspark.conf import SparkConf
+
 from datetime import datetime
 import botocore
 
@@ -33,8 +35,11 @@ args = getResolvedOptions(
     ]
 )
 
+conf = SparkConf()
+conf.set("spark.sql.parquet.enableVectorizedReader", "false")
 
-sc = SparkContext()
+sc = SparkContext(conf=conf)
+
 hadoop_conf = sc._jsc.hadoopConfiguration()
 hadoop_conf.set("fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 glueContext = GlueContext(sc)
